@@ -5,66 +5,93 @@ class Table():
         deck = Deck()
         self.deck = deck.deck
         self.players = deck.distribute_the_cards()
+        self.active_players = list(self.players)
         self.game_on = True
+        self.turn_cards = []
 
     def turn(self):
-        turn_cards = []
         for i in self.players:
-            card = (i.move(), i.name)
-            turn_cards.append(card)
+            if i.ingame == False:
+                try:
+                    self.active_players.remove(i)
+                except:
+                    continue
+        print(self.active_players)
+        for i in self.active_players:
+           self.turn_cards.append(i.move())
 
-        print(turn_cards)
-        return turn_cards
+    # Determine the winner and clear the turn_cards list
+        winner = self.check_the_highest_card(self.active_players)
+        self.award(winner)
+        self.turn_cards = []
 
-    def check_the_highest_card(self,list):
-        card_ranks = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "Jack": 11, "Queen": 12, "King": 13, "Ace": 14}
-        highest_card = 0
-        for card in list:  
-            rank = card_ranks[card[0].split()[0]]
-            print(rank)
-            if rank > highest_card:
-                highest_card = rank
-                winning_card = card
-        
-        list_of_winners_of_the_turn = []
-        for card in list:
-            if winning_card[0].split()[0] == card[0].split()[0]:
-                list_of_winners_of_the_turn.append(card)
-                print(f'{list_of_winners_of_the_turn} this is the list')
-        #if len(list_of_winners_of_the_turn) < 1
+        return self.active_players
 
-        print(list_of_winners_of_the_turn[0][1])
-        return list_of_winners_of_the_turn[0][1]
 
-    def award(self,winning_player):
-        table_cards =[]
-        for i in tstack:
-            table_cards.append(i[0])
-        for i in self.players:
-            print(i.name)
-            if i.name == winning_player:
-                i.cards.extend(table_cards)
-                print("yes")
-                print(i.cards)
-                #seems to work, but need to delete the card from the player's hand as it goes to the move
+    def check_the_highest_card(self, player_list):
+        card_ranks = {
+            "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
+            "9": 9, "10": 10, "Jack": 11, "Queen": 12, "King": 13,
+            "Ace": 14, "Joker": 15
+        }
+        highest_card_rank = 0
+        list_of_winners = []
+
+        for player in player_list:
+            try:
+                rank = card_ranks[player.current_card.split()[0]]
+                if rank > highest_card_rank:
+                    highest_card_rank = rank
+                    list_of_winners = [player]
+                elif rank == highest_card_rank:
+                    list_of_winners.append(player)
+            except AttributeError:
+                continue
+
+        while len(list_of_winners) > 1:
+            self.turn_cards.extend([player.move() for player in list_of_winners])
+            highest_card_rank = 0
+            new_list_of_winners = []
+
+            for player in list_of_winners:
+                try:
+                    rank = card_ranks[player.current_card.split()[0]]
+                    if rank > highest_card_rank:
+                        highest_card_rank = rank
+                        new_list_of_winners = [player]
+                    elif rank == highest_card_rank:
+                        new_list_of_winners.append(player)
+                except AttributeError:
+                    continue
+
+            list_of_winners = new_list_of_winners
+
+        return list_of_winners[0] if list_of_winners else None
+
+
+    def award(self, winning_player):
+        for i in self.active_players:
+            if i.name == winning_player.name:
+                i.cards.extend(self.turn_cards)
+                
+        self.turn_cards = []
+               
+    def game(self):
+        while len(self.active_players) > 1:
+            try:
+                self.award(self.check_the_highest_card(self.turn()))
             
+                if len(self.active_players) == 2:
+                    if len(self.active_players[1].cards) > len(self.active_players[0].cards):
+                        name = self.active_players[1].name
+                        print(f'{name} is the Winner')
+                    elif len(self.active_players[1].cards) < len(self.active_players[0].cards):
+                        name = self.active_players[0].name
+                        print(f'{name} is the Winner')
+                    else: 
+                        print(f"{self.active_players[0].name} and {self.active_players[0].name} drew this game")
+                    
+                    break
+            except:
+                pass
 
-
-        
-
-
-    
-
-
-            
-
-            
-            
-        
-
-
-
-t = Table()
-tstack = t.turn()
-print(f"this is tstack {tstack}")
-t.award(t.check_the_highest_card(tstack))

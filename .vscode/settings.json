@@ -1,0 +1,5 @@
+{
+    "terminal.integrated.shellIntegration.suggestEnabled": true,
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.defaultProfile.linux": ""
+}
